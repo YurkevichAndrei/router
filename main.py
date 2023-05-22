@@ -3,15 +3,16 @@ import websockets
 from geojson import LineString
 from datetime import datetime
 from route_module.main import Route
-# from test_module.main import Route
 
 all_clients = []
 
 
+# отправка сообщения клиенту
 async def send_message(message, client_soket: websockets.WebSocketClientProtocol):
     await client_soket.send(message)
 
 
+# расчет маршрута по точкам клиента с формированием geojson и его отправкой в ответ клиенту
 async def route(message: str, client_soket: websockets.WebSocketClientProtocol):
     coord_mas = []
     coords = message.split("=>")
@@ -52,6 +53,7 @@ async def route(message: str, client_soket: websockets.WebSocketClientProtocol):
         await send_message(geoj+'|=|'+str(h_points)+'|=|'+str(len(h_points)), client_soket)
 
 
+# обработка новых подуключений и новых сообщений
 async def new_client_connected(client_soket: websockets.WebSocketClientProtocol, path: str):
     print("New connectetd!")
     all_clients.append(client_soket)
@@ -64,6 +66,7 @@ async def new_client_connected(client_soket: websockets.WebSocketClientProtocol,
             await route(new_message, client_soket)
 
 
+# запуск сервера
 async def start_server():
     await websockets.serve(new_client_connected, "localhost", 12345)
 

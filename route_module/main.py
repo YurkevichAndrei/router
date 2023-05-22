@@ -8,6 +8,7 @@ import networkx as nx
 from datetime import datetime
 
 
+# класс хранения информации об изображении
 class ImgData:
     def __init__(self, src_ds):
         self.width = src_ds.RasterXSize
@@ -50,6 +51,8 @@ class Route:
 
     # расчет веса ребра
     def get_edge_weight(self, dh, is_diag):
+        # модуль изменения высоты * коэффициент вертикальной скорости +
+        # + (длина деагонали если диагональ иначе длина стороны) * коэффициент горизонтальной скорости
         return abs(dh) * self.k_vert_v + (self.diag_edge_len if is_diag else self.edge_len) * self.k_horiz_v
 
     # номер пикселя по его расположению на изображении
@@ -69,42 +72,38 @@ class Route:
         for column in range(w):
             cur_node_number = self.get_node_number(row, column, w)
             h_node = h_matrix[row - 1, column]
-
+            # если не нулевая строка
             if row > 0:
                 data_for_graph.append((cur_node_number, self.get_node_number(row-1, column, w),
                                        {'w': self.get_edge_weight(h_node - h_matrix[row-1, column], False)}))
-                # h_matrix[row-1, column]
+                # если не последний столбец
                 if column < w-1:
                     data_for_graph.append((cur_node_number, self.get_node_number(row - 1, column + 1, w),
                                            {'w': self.get_edge_weight(h_node - h_matrix[row-1, column+1], True)}))
-                    # h_matrix[row-1, column+1]
+                # если не нулевой столбец
                 if column > 0:
                     data_for_graph.append((cur_node_number, self.get_node_number(row - 1, column - 1, w),
                                            {'w': self.get_edge_weight(h_node - h_matrix[row-1, column-1], True)}))
-                    # h_matrix[row-1, column-1]
-
+            # если не нулевой столбец
             if column > 0:
                 data_for_graph.append((cur_node_number, self.get_node_number(row, column - 1, w),
                                        {'w': self.get_edge_weight(h_node - h_matrix[row, column - 1], False)}))
-                # h_matrix[row, column-1]
+                # если не последняя строка
                 if row < h-1:
                     data_for_graph.append((cur_node_number, self.get_node_number(row + 1, column - 1, w),
                                            {'w': self.get_edge_weight(h_node - h_matrix[row + 1, column - 1], True)}))
-                    # h_matrix[row+1, column-1]
-
+            # если не последняя строка
             if row < h-1:
                 data_for_graph.append((cur_node_number, self.get_node_number(row + 1, column, w),
                                        {'w': self.get_edge_weight(h_node - h_matrix[row + 1, column], False)}))
-                # h_matrix[row+1, column]
+                # если не последний столбец
                 if column < w-1:
                     data_for_graph.append((cur_node_number, self.get_node_number(row + 1, column + 1, w),
                                            {'w': self.get_edge_weight(h_node - h_matrix[row + 1, column + 1], True)}))
-                    # h_matrix[row + 1, column + 1]
-
+            # если не последний столбец
             if column < w-1:
                 data_for_graph.append((cur_node_number, self.get_node_number(row, column + 1, w),
                                        {'w': self.get_edge_weight(h_node - h_matrix[row, column + 1], False)}))
-                # h_matrix[row, column+1]
 
         f = (self.target_dir / f"{filename}_{row}.bin").open('wb')
         for data in data_for_graph:
@@ -181,9 +180,11 @@ class Route:
     # получение графа на площадь для построения маршрута
     def get_area_edges(self, img_data: ImgData, row_start: int, column_start: int, row_finish: int, column_finish: int):
         indent = 10
+
+        # проверяем, что точка старта расположена ближе к точке (0, 0)
+        # если нет,меняе местами координаты точки старта и финиша
         if row_start > row_finish:
             row_start, row_finish = row_finish, row_start
-
         if column_start > column_finish:
             column_start, column_finish = column_finish, column_start
 
@@ -237,12 +238,17 @@ class Route:
             res_edges.extend(l)
 
         graph = nx.Graph()
+        # добавление номеров вершин в граф
         for n1, n2, _ in res_edges:
             graph.add_node(n1)
             graph.add_node(n2)
+        # добавление ребер в граф
         graph.add_edges_from(res_edges)
 
-        points_route = nx.shortest_path(graph, source=self.get_node_number(*start_coord, m_data.width), target=self.get_node_number(*finish_coord, m_data.width), weight="w")
+        # получение точек маршрута
+        points_route = nx.shortest_path(graph, source=self.get_node_number(*start_coord, m_data.width),
+                                        target=self.get_node_number(*finish_coord, m_data.width), weight="w")
+        # перевод точек маршрута в географические координаты и считываение высоты в них
         result = []
         for point in points_route:
             row, column = self.get_matrix_coords_by_number(point, m_data.width)
