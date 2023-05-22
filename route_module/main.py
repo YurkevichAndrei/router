@@ -7,19 +7,6 @@ from osgeo import gdal
 import networkx as nx
 from datetime import datetime
 
-# edge_len = 30  # метров
-# diag_edge_len = edge_len * math.sqrt(2)
-# k_horiz_v = 0.35
-# k_vert_v = 1.0
-#
-# target_dir = Path(f"{Path.cwd()}\\files_h_{k_horiz_v}_v_{k_vert_v}\\")
-# if not target_dir.exists():
-#     target_dir.mkdir(parents=True)
-#
-# target_filename = f"test_h_{k_horiz_v}_v_{k_horiz_v}"
-# file = "C:\\Users\\ad680\\Desktop\\router_test\\test.bin"
-# file = "test.bin"
-
 
 class ImgData:
     def __init__(self, src_ds):
