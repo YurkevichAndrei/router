@@ -36,7 +36,7 @@ class Route:
         self.k_horiz_v = 0.35
         self.k_vert_v = 1.0
 
-        self.target_dir = Path(f"{Path.cwd()}\\files_h_{self.k_horiz_v}_v_{self.k_vert_v}\\")
+        self.target_dir = Path(f"route_module\\files_h_{self.k_horiz_v}_v_{self.k_vert_v}\\")
         if not self.target_dir.exists():
             self.target_dir.mkdir(parents=True)
 
