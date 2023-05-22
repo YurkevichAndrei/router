@@ -147,67 +147,6 @@ class Route:
         with mp.Pool(mp.cpu_count()) as p:
             p.starmap(self.write_graph_to_files, args)
 
-        # for row in range(h):
-        #     print(row)
-        #     for column in range(w):
-        #         cur_node_number = self.get_node_number(row, column, w)
-        #         h_node = h_matrix[row - 1, column]
-        #
-        #         if row > 0:
-        #             data_for_graph.append((cur_node_number, self.get_node_number(row-1, column, w),
-        #                                    {'w': self.get_edge_weight(h_node - h_matrix[row-1, column], False)}))
-        #             # h_matrix[row-1, column]
-        #             if column < w-1:
-        #                 data_for_graph.append((cur_node_number, self.get_node_number(row - 1, column + 1, w),
-        #                                        {'w': self.get_edge_weight(h_node - h_matrix[row-1, column+1], True)}))
-        #                 # h_matrix[row-1, column+1]
-        #             if column > 0:
-        #                 data_for_graph.append((cur_node_number, self.get_node_number(row - 1, column - 1, w),
-        #                                        {'w': self.get_edge_weight(h_node - h_matrix[row-1, column-1], True)}))
-        #                 # h_matrix[row-1, column-1]
-        #
-        #         if column > 0:
-        #             data_for_graph.append((cur_node_number, self.get_node_number(row, column - 1, w),
-        #                                    {'w': self.get_edge_weight(h_node - h_matrix[row, column - 1], False)}))
-        #             # h_matrix[row, column-1]
-        #             if row < h-1:
-        #                 data_for_graph.append((cur_node_number, self.get_node_number(row + 1, column - 1, w),
-        #                                        {'w': self.get_edge_weight(h_node - h_matrix[row + 1, column - 1], True)}))
-        #                 # h_matrix[row+1, column-1]
-        #
-        #         if row < h-1:
-        #             data_for_graph.append((cur_node_number, self.get_node_number(row + 1, column, w),
-        #                                    {'w': self.get_edge_weight(h_node - h_matrix[row + 1, column], False)}))
-        #             # h_matrix[row+1, column]
-        #             if column < w-1:
-        #                 data_for_graph.append((cur_node_number, self.get_node_number(row + 1, column + 1, w),
-        #                                        {'w': self.get_edge_weight(h_node - h_matrix[row + 1, column + 1], True)}))
-        #                 # h_matrix[row + 1, column + 1]
-        #
-        #         if column < w-1:
-        #             data_for_graph.append((cur_node_number, self.get_node_number(row, column + 1, w),
-        #                                    {'w': self.get_edge_weight(h_node - h_matrix[row, column + 1], False)}))
-        #             # h_matrix[row, column+1]
-        #
-        #     f = (target_dir / f"{filename}_{row}.bin").open('wb')
-        #     for data in data_for_graph:
-        #         x, y = list(data[:-1])
-        #         weight = data[-1]['w']
-        #         try:
-        #             f.write(x.to_bytes(4, 'big'))
-        #             f.write(y.to_bytes(4, 'big'))
-        #             f.write(st.pack('f', weight))
-        #         except OSError:
-        #             break
-        #         except Exception as e:
-        #             print(e)
-        #             print(x, y, weight)
-        #             break
-        #
-        #     data_for_graph = []
-        #     f.close()
-        # return data_for_graph
-
     # вывод бинарного файла с графом в консоль
     def print_bin(self, filename: str):
         f = Path(filename).open('rb')
