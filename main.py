@@ -22,6 +22,7 @@ async def route(message: str, client_soket: websockets.WebSocketClientProtocol):
         coord_mas.append(point)
     coords_points = []
     h_points = []
+    h_fly_points = []
     if len(coord_mas) != 0:
         start_time = datetime.now()
         print(start_time)
@@ -31,10 +32,11 @@ async def route(message: str, client_soket: websockets.WebSocketClientProtocol):
     #     for j in range(len(route_with_h)):
     #         m_point = route_with_h[j]
     #         coords_points.append((m_point[1], m_point[0]))
-
+        print(route_with_h)
         for m_point in route_with_h:
             coords_points.append((m_point[1], m_point[0]))
             h_points.append(m_point[2])
+            h_fly_points.append(m_point[3])
 
         line = LineString(coords_points)
         line = str(line)[1:-1]
@@ -50,7 +52,8 @@ async def route(message: str, client_soket: websockets.WebSocketClientProtocol):
                                                                                         "}"
         print(geoj)
         print(datetime.now() - start_time)
-        await send_message(geoj+'|=|'+str(h_points)+'|=|'+str(len(h_points)), client_soket)
+        print('|=|'+str(h_points)+'|=|'+str(len(h_points))+'|=|'+str(h_fly_points))
+        await send_message(geoj+'|=|'+str(h_points)+'|=|'+str(len(h_points))+'|=|'+str(h_fly_points), client_soket)
 
 
 # обработка новых подуключений и новых сообщений

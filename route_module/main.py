@@ -227,6 +227,62 @@ class Route:
     def get_points(self):
         return self.lat_start, self.lon_start, self.lat_finish, self.lon_finish
 
+    def smoothing(self, route_list: list, i: int, matrix, img_data: ImgData):
+        lat_0, lon_0 = route_list[i - 1]
+        lat_1, lon_1 = route_list[i]
+        lat_2, lon_2 = route_list[i + 1]
+
+        lat_1 = (lat_0 + lat_1 + lat_2) / 3
+        lon_1 = (lon_0 + lon_1 + lon_2) / 3
+
+        row, column = self.geocoords_to_matrix_coords(lat_1, lon_1, img_data)
+        height = matrix[row, column]
+        return [lat_1, lon_1, height]
+
+    def smooth_route(self, route_list: list):
+        print('smoothing')
+        result_smooth = []
+        lat, lon = route_list[0]
+        matrix, img_data = self.get_height_matrix('route_module/image.tif')
+        row, column = self.geocoords_to_matrix_coords(lat, lon, img_data)
+        height = matrix[row, column]
+        result_smooth.append([lat, lon, height])
+
+        result_smooth = result_smooth + [self.smoothing(route_list, i, matrix, img_data) for i in range(1, len(route_list)-1)]
+
+        lat, lon = route_list[-1]
+        row, column = self.geocoords_to_matrix_coords(lat, lon, img_data)
+        height = matrix[row, column]
+        result_smooth.append([lat, lon, height])
+
+        result_smooth[0].append(result_smooth[0][2]+10)
+
+        for i in range(len(result_smooth)-1):
+            h1 = result_smooth[i][2]
+            h2 = result_smooth[i+1][2]
+            dh = abs(h2 - h1)
+
+            if dh != 0:
+                sum_h = 0.0
+                kh = math.ceil(dh / 10)
+                count_p = math.ceil(kh/2)
+                if count_p > i+1:
+                    count_p = i+1
+                    kh = count_p * 2
+                print(f'h1 {h1} h2 {h2} dh {dh} kh {kh} coun_p {count_p}')
+
+                for j in range(-count_p+1, count_p):
+                    sum_h += result_smooth[i+j][2]+10
+                print(f'{h1}  {sum_h}/{kh}={int(sum_h)/kh}')
+                result_smooth[i].append((int(sum_h) / kh) + 10)
+            else:
+                result_smooth[i].append(h1 + 10)
+
+        result_smooth[-1].append(result_smooth[-1][2] + 10)
+
+        print('smoothing end')
+        return result_smooth
+
     # получение маршрута
     def get_route(self):
         matrix, m_data = self.get_height_matrix('route_module/image.tif')
@@ -250,12 +306,16 @@ class Route:
                                         target=self.get_node_number(*finish_coord, m_data.width), weight="w")
         # перевод точек маршрута в географические координаты и считываение высоты в них
         result = []
-        for point in points_route:
+        for i, point in enumerate(points_route):
             row, column = self.get_matrix_coords_by_number(point, m_data.width)
             lat, lon = self.matrix_coords_to_geocoords(row, column, m_data)
-            height = matrix.item((row, column))
-            result.append((lat, lon, height))
-        return result
+            if i == 0:
+                lat, lon = self.lat_start, self.lon_start
+                print("start", lat, lon)
+            elif i == len(points_route) - 1:
+                lat, lon = self.lat_finish, self.lon_finish
+            result.append((lat, lon))
+        return self.smooth_route(result)
 
 
 if __name__ == '__main__':
