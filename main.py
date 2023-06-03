@@ -26,7 +26,7 @@ async def route(message: str, client_soket: websockets.WebSocketClientProtocol):
     if len(coord_mas) != 0:
         start_time = datetime.now()
         print(start_time)
-        route_with_h = Route(coord_mas[0][1], coord_mas[0][0], coord_mas[-1][1], coord_mas[-1][0]).get_route()
+        h_sm_1, route_with_h = Route(coord_mas[0][1], coord_mas[0][0], coord_mas[-1][1], coord_mas[-1][0]).get_route()
     # for i in range(len(coord_mas)-1):
     #     route_with_h = Route(coord_mas[i][1], coord_mas[i][0], coord_mas[i+1][1], coord_mas[i+1][0]).get_route()
     #     for j in range(len(route_with_h)):
@@ -53,7 +53,7 @@ async def route(message: str, client_soket: websockets.WebSocketClientProtocol):
         print(geoj)
         print(datetime.now() - start_time)
         print('|=|'+str(h_points)+'|=|'+str(len(h_points))+'|=|'+str(h_fly_points))
-        await send_message(geoj+'|=|'+str(h_points)+'|=|'+str(len(h_points))+'|=|'+str(h_fly_points), client_soket)
+        await send_message(geoj+'|=|'+str(h_points)+'|=|'+str(len(h_points))+'|=|'+str(h_fly_points) + '|=|'+str(h_sm_1), client_soket)
 
 
 # обработка новых подуключений и новых сообщений
