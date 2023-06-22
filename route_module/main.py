@@ -6,8 +6,6 @@ import numpy as np
 from osgeo import gdal
 import networkx as nx
 from datetime import datetime
-from scipy.signal import savgol_filter
-from scipy import interpolate
 
 
 # класс хранения информации об изображении
@@ -281,7 +279,7 @@ class Route:
         height = matrix[row, column]
         result_smooth.append([lat, lon, height])
 
-        result_smooth[0].append(result_smooth[0][2]+10)
+        # result_smooth[0].append(result_smooth[0][2]+10)
 
         h_list_origin = [r[2]+10 for r in result_smooth]
         h_list = h_list_origin[:]
@@ -308,87 +306,21 @@ class Route:
         def not_valid_handler_sm(index: int):
             h_list_sm[index] += 10
 
-        h_list_sm_sm = self.moving_average(h_list_sm, len(h_list) // 5)
+        h_list_sm_sm = self.moving_average(h_list_sm, len(h_list) // 7)
 
         while not self.validate_h_list(h_list_origin, list(h_list_sm_sm), not_valid_handler_sm):
             print("not valid sm")
-            h_list_sm_sm = self.moving_average(h_list_sm, len(h_list) // 5)
+            h_list_sm_sm = self.moving_average(h_list_sm, len(h_list) // 7)
 
         # tck = interpolate.splrep(num_h, h_list, k=2, s=500)
         # h_list = interpolate.splev(num_h, tck, der=0)
-        for i in range(1, len(result_smooth) - 1):
+        for i in range(0, len(result_smooth)):
             result_smooth[i].append(h_list_sm_sm[i])
 
-        # for i in range(1, len(result_smooth)-1):
-        #     h1 = result_smooth[i][2]
-        #     h2 = result_smooth[i+1][2]
-        #     h3 = 0
-        #     h4 = 0
-        #     h5 = 0
-        #     dh2 = abs(h2 - h1)
-        #     dh3 = 0
-        #     dh4 = 0
-        #     dh5 = 0
-        #     if len(result_smooth) - i - 4 >= 0:
-        #         h3 = result_smooth[i+3][2]
-        #         dh3 = abs(h3 - h1)
-        #     if len(result_smooth) - i - 5 >= 0:
-        #         h4 = result_smooth[i+4][2]
-        #         dh4 = abs(h4 - h1)
-        #     if len(result_smooth) - i - 6 >= 0:
-        #         h5 = result_smooth[i+5][2]
-        #         dh5 = abs(h5 - h1)
-        #     dh = max(dh2, dh3, dh4, dh5)
-        #     if dh != 0:
-        #         sum_h = 0.0
-        #         kh = math.ceil(dh / 10)
-        #         count_p = math.ceil(kh/2)
-        #         # проверка границ маршрута
-        #         if count_p > i+1:
-        #             count_p = i+1
-        #             kh = count_p * 2
-        #         elif count_p > len(result_smooth) - (i + 1):
-        #             count_p = (len(result_smooth) - (i + 1))
-        #             kh = count_p * 2
-        #         print(f'h1 {h1} h2 {h2} h3 {h3} h4 {h4} h5 {h5} dh {dh} kh {kh} coun_p {count_p}')
-        #
-        #         l_max_i = i
-        #         l_max_is_found = False
-        #         r_max_i = i
-        #         r_max_is_found = False
-        #         for k in range(count_p):
-        #             if not l_max_is_found:
-        #                 if result_smooth[i - k - 1][2] <= result_smooth[i - k][2] > result_smooth[i - k + 1][2]:
-        #                     l_max_i = i - k
-        #                     l_max_is_found = True
-        #             if not r_max_is_found:
-        #                 if result_smooth[i + k - 1][2] < result_smooth[i + k][2] >= result_smooth[i + k + 1][2]:
-        #                     l_max_i = i + k
-        #                     l_max_is_found = True
-        #
-        #         if not l_max_is_found:
-        #             l_max_i = i - count_p
-        #
-        #         if not r_max_is_found:
-        #             r_max_i = i + count_p
-        #
-        #         print(f"{l_max_i=}, {r_max_i=}")
-        #
-        #         c_p = 0
-        #         for j in range(l_max_i, r_max_i+1):
-        #             sum_h += result_smooth[j][2]
-        #             print(j)
-        #             c_p += 1
-        #         print(f'{h1}  {sum_h}/{c_p} + 10 = {int(sum_h)/c_p + 10}')
-        #         result_smooth[i].append((int(sum_h) / c_p) + 10)
-        #
-        #     else:
-        #         result_smooth[i].append(h1 + 10)
-
-        result_smooth[-1].append(result_smooth[-1][2] + 10)
+        # result_smooth[-1].append(result_smooth[-1][2] + 10)
 
         print('smoothing end')
-        return h_list_sm_first, result_smooth
+        return result_smooth
 
     # получение маршрута
     def get_route(self):
